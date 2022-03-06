@@ -13,7 +13,7 @@ export default function Cadastro() {
     const [bcpf, setBcpf] = useState(); // valor do cpf no campo Busca
     const [ccpf, setCcpf] = useState(); // valor do cpf no campo Cadastrar
     const [ctel, setCtel] = useState(); // valor do telefone
-    const [nome, setNome] = useState();
+    const [nome, setNome] = useState(); // mome do cliente a ser cadastrado
     const [clientes, setClientes] = useState([]);
 
     const getClientes = () => {
