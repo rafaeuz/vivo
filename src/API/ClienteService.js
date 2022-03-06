@@ -8,6 +8,10 @@ class ClienteService {
         return axios.get(CLIENTES_REST_API_URL);
     }
 
+    getCliente(cpf) {
+        return axios.get(CLIENTES_REST_API_URL+'/cpf?cpf='+cpf);
+    }
+
     postCliente(cliente) {
         return axios.post(CLIENTES_REST_API_URL, cliente, { Headers: { 'Content-Type': 'application/json' } } );
     }

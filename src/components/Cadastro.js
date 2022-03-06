@@ -1,4 +1,4 @@
-import React, {useState, useRef, useEffect} from "react"
+import React, {useState} from "react"
 import Table from '@mui/material/Table';
 import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
@@ -10,50 +10,73 @@ import ClienteService from "../API/ClienteService";
 
 
 export default function Cadastro() {
-    const [bcpf, setBcpf] = useState();
-    const [ccpf, setCcpf] = useState();
-    const [ctel, setCtel] = useState();
-
+    const [bcpf, setBcpf] = useState(); // valor do cpf no campo Busca
+    const [ccpf, setCcpf] = useState(); // valor do cpf no campo Cadastrar
+    const [ctel, setCtel] = useState(); // valor do telefone
+    const [nome, setNome] = useState();
     const [clientes, setClientes] = useState([]);
 
     const getClientes = () => {
-        ClienteService.getClientes().then((response) => {
-            setClientes(response.data.sort(function(a, b) {
-                var nameA = a["nome"].toUpperCase();
-                var nameB = b["nome"].toUpperCase();
-                if(nameA < nameB) return -1;
-                if(nameA > nameB) return 1;
-                return 0;
-            })) 
-        });
-    };
+        if (bcpf === '' || bcpf === undefined) {
+            ClienteService.getClientes().then((response) => {
+                setClientes(response.data.sort(function(a, b) {
+                    var nameA = a["nome"].toUpperCase();
+                    var nameB = b["nome"].toUpperCase();
+                    if(nameA < nameB) return -1;
+                    if(nameA > nameB) return 1;
+                    return 0;
+                })) 
+            });
+        }
+        else if (bcpf.length === 14) {
+            let bcpf2 = bcpf.split('.').join("").split('-').join("");
+            ClienteService.getCliente(bcpf2).then((response) => {
+                setClientes(response.data)});
+        }
+        else {
+            alert("CPF inválido");
+        }
 
-    const novoCliente = {"cpf": "36925814700", "nome": "Nikola Tesla", "telefone": "11966669876" };
+    }
 
-    const postCliente = (novoCliente) => {
-        ClienteService.postCliente(novoCliente);
+    const postCliente = () => {
+         if (ccpf.length === 14 && ctel.length === 15 && nome !== undefined && nome !== '') {
+            let ccpf2 = ccpf.split('.').join("").split('-').join("");
+            let novoCliente = {"cpf": ccpf2, "nome": nome, "telefone": ctel };
+            ClienteService.postCliente(novoCliente);
+            alert("Dados do cliente cadastrados / atualizados com sucesso");
+            setCcpf(''); setNome(''); setCtel('');
+        }
+        else if (ccpf.length !== 14 && ctel.length !== 15 && nome !== undefined && nome !== '') {
+            alert("CPF e Telefone inválidos");
+        }
+        else if (ccpf.length === 14 && ctel.length !== 15) {
+            alert("Telefone inválido, inclua o DDD com 2 dígitos e o telefone com 9 dígitos");
+        }
+        else if (ccpf.length !== 14 && ctel.length === 15) {
+            alert("CPF inválido");
+        }   
+        else {
+            alert("Preencha todos os dados para cadastrar / atualizar o cliente");
+        }
     };
 
     return (
         <div>
             <h2>Buscar Cliente:</h2>   
-          
-     
             <TextField  value = {bcpf}
                         type="text" label="Buscar por CPF" id="buscaCPF"  
                         placeholder="Buscar por CPF" title="Busca por CPF" 
                         sx = {{m:1, width:"200px"}}
-                        onChange={(e) => handleBCPF(e)}          
-                        />
-            <TextField  type="text" label="Buscar por Nome" id="buscaNome"  placeholder="Buscar por nome" title="Busca por nome" sx = {{m:1, width:"500px"}}/>
-            <Button
-                type="submit"          
-                variant="contained"
-                sx={{ m: 2, backgroundColor: "#660099", ':hover':{backgroundColor: "#660099"} }}
-                onClick={() => {getClientes()}}>
-                Buscar
-            </Button>
+                        onChange={(e) => handleCPF(e, setBcpf)}          
+            />
 
+            <Button type="submit"          
+                    variant="contained"
+                    sx={{ m: 2, backgroundColor: "#660099", ':hover':{backgroundColor: "#660099"} }}
+                    onClick={() => {getClientes()}}> Buscar
+            </Button>
+         
             <TableContainer sx={{ maxHeight: 440, maxWidth: "80%"}} >
                 <Table stickyHeader>
                     <TableHead>
@@ -75,135 +98,57 @@ export default function Cadastro() {
             </TableContainer>
         
             <h2>Cadastrar Cliente: </h2>
-            <TextField
-                value = {ccpf}
-                label="CPF"
-                id="box-cpf"
-                sx={{ m: 1, width: '200px' }}
-                onChange={(e) => handleCCPF(e)}
+            <TextField  value = {ccpf}
+                        label="CPF"
+                        id="box-cpf"
+                        sx={{ m: 1, width: '200px' }}
+                        onChange={(e) => handleCPF(e, setCcpf)}
             />
     
-            <TextField
-                label="Nome"
-                id="box-nome"
-                sx={{ m: 1, width: '500px' }}
+            <TextField  
+                        value = {nome}
+                        label="Nome"
+                        id="box-nome"
+                        sx={{ m: 1, width: '500px' }}
+                        onChange={(e) => setNome(e.target.value)}
             />
             
-            <TextField
-                value = {ctel}
-                label="Telefone"
-                id="box-telefone"
-                sx={{ m: 1, width: '200px' }}
-                onChange={(e) => handleTelefone(e)}
+            <TextField  value = {ctel}
+                        label="Telefone"
+                        id="box-telefone"
+                        sx={{ m: 1, width: '200px' }}
+                        onChange={(e) => handleTelefone(e)}
             />
 
             <Button type="submit"    
                     variant="contained"
                     sx={{ m: 2, backgroundColor: "#660099", ":hover":{backgroundColor: "#660099"} }}
-                    onClick={() => {postCliente(novoCliente)}}>
-                    Cadastrar       
+                    onClick={() => {postCliente()}}> Cadastrar       
             </Button>
         </div>       
     );
 
-
-
-    function handleBCPF(e) {
-        const onlyNums = e.target.value.replace(/[^0-9]/g, '');
+    function handleCPF(e, set) {
+        let onlyNums = e.target.value.replace(/[^0-9]/g, '');
         if (onlyNums.length < 11) {
-            setBcpf(onlyNums);
+            set(onlyNums);
         } else if (onlyNums.length === 11) {
-            const number = onlyNums.replace(
+            let number = onlyNums.replace(
                 /(\d{3})(\d{3})(\d{3})(\d{2})/,
                 '$1.$2.$3-$4');
-            setBcpf(number);
+            set(number);
         }
     }
 
-    function handleCCPF(e) {
-        const onlyNums = e.target.value.replace(/[^0-9]/g, '');
-        if (onlyNums.length < 11) {
-            setCcpf(onlyNums);
-        } else if (onlyNums.length === 11) {
-            const number = onlyNums.replace(
-                /(\d{3})(\d{3})(\d{3})(\d{2})/,
-                '$1.$2.$3-$4');
-            setCcpf(number);
-        }
-    }
-
-
-    
     function handleTelefone(e) {
-        const onlyNums = e.target.value.replace(/[^0-9]/g, '');
+        let onlyNums = e.target.value.replace(/[^0-9]/g, '');
         if (onlyNums.length < 11) {
             setCtel(onlyNums);
         } else if (onlyNums.length === 11) {
-            const number = onlyNums.replace(
+            let number = onlyNums.replace(
                 /(\d{2})(\d{5})(\d{4})/,
                 '($1) $2-$3');
             setCtel(number);
         }
-    }
-    
-    
-     function buscarNome() {
-    //     var input, filter, table, tr, td, i, txtValue;
-    //     input = document.getElementById("myInput");
-    //     filter = input.value.toUpperCase();
-    //     table = document.getElementById("tabela");
-    //     tr = table.getElementsByTagName("tr");
-    //     for (i = 0; i < tr.length; i++) {
-    //       td = tr[i].getElementsByTagName("td")[0];
-    //       if (td) {
-    //         txtValue = td.textContent || td.innerText;
-    //         if (txtValue.toUpperCase().indexOf(filter) > -1) {
-    //           tr[i].style.display = "";
-    //         } else {
-    //           tr[i].style.display = "none";
-    //         }
-    //       }
-    //     }   
-     }
-
-     function buscarCPF() {
-    //     var input, filter, table, tr, td, i, txtValue;
-    //     input = document.getElementById("myInput");
-    //     filter = input.value.toUpperCase();
-    //     table = document.getElementById("tabela");
-    //     tr = table.getElementsByTagName("tr");
-    //     for (i = 0; i < tr.length; i++) {
-    //       td = tr[i].getElementsByTagName("td")[0];
-    //       if (td) {
-    //         txtValue = td.textContent || td.innerText;
-    //         if (txtValue.toUpperCase().indexOf(filter) > -1) {
-    //           tr[i].style.display = "";
-    //         } else {
-    //           tr[i].style.display = "none";
-    //         }
-    //       }
-    //     }   
-     }
-
-     function adicionar() {  
-    //     // let x = resultados;
-    //     // // let y = resultadosD;
-    //     // // y[valor]=result;
-    //     // // y["unidade"+valor]=unidade;
-    //     // // setResultadosD(y)
-    //     // // console.log(y);
-    //     // if (result !== "" && valor !== null && unidade !== null){
-    //     //   x.push([valor,result, unidade]);
-    //     //   x.sort()
-    //     //   setResultados(x);
-    //     //   // console.log(resultados);
-    //     //   setView(true);
-    //     //   setResult("");
-    //     //   setClear(!clear);
-    //     //   setUnidade(null);
-    //     //   examesRef.current.focus();
-    //     // }
-     }
-
-     
+    }   
 }
