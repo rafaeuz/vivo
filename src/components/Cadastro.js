@@ -77,7 +77,7 @@ export default function Cadastro() {
                     onClick={() => {getClientes()}}> Buscar
             </Button>
          
-            <TableContainer sx={{ maxHeight: 440, maxWidth: "80%"}} >
+            <TableContainer sx={{ maxHeight: 300, maxWidth: "80%"}} >
                 <Table stickyHeader>
                     <TableHead>
                         <TableRow>
