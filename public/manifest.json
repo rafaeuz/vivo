@@ -22,5 +22,5 @@
   "display": "standalone",
   "theme_color": "#000000",
   "background_color": "#ffffff",
-  "engines": { "npm": "6.x", "node": "12.x" }
+  "engines": { "npm": "8.x", "node": "16.x" }
 }
