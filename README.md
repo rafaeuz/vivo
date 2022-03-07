@@ -7,5 +7,5 @@ Aplicativo permite a consulta e cadastro de clientes através do CPF (chave de n
 # Backend
 - Para detalhes e documentação do backend acesse [backend](https://github.com/rafaeuz/vivoBack)
 
-#Arquitetura da Solução
+# Arquitetura da Solução
 ![arquitetura](./arquitetura.jpg)
